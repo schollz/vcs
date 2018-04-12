@@ -13,8 +13,9 @@ import (
 
 // VCSystem is the structure for the version-controlled system
 type VCSystem struct {
-	Owners        []string `json:"owners"`
-	CurrentBranch string   `json:"current_branch"`
+	Owners        []string          `json:"owners"`
+	CurrentBranch string            `json:"current_branch"`
+	Files         map[string]VCFile `json:"files"`
 }
 
 // VCFile is the structure for a version-controlled file
@@ -32,30 +33,21 @@ type Block struct {
 
 // Init returns a new version controlled file or loads
 // one from a file
-func Init(filename string) (*VCFile, error) {
-	vc := new(VCFile)
-	vc.Filename = filename
-	errOpen := vc.readFromFile()
-	if errOpen == nil {
-		return vc, nil
-	}
-
+func Init() (*VCSystem, error) {
+	vc := new(VCSystem)
+	vc.Owners = []string{identity.Public}
 	vc.CurrentBranch = "master"
-	vc.CurrentText = ""
-	vc.StartingBlock = ""
-	vc.BlockMap = make(map[string]Block)
-	_, err := vc.Commit("")
-	vc.StartingBlock = vc.CurrentHash
-	return vc, err
+	vc.Files = make(map[string]VCFile)
+	return vc, nil
 }
 
 // Commit will write the current commit to a file
-func (vc *VCFile) Commit(text, branch string) (blockHash string, err error) {
+func (vc *VCSystem) Commit(text string) (err error) {
 	// TODO add file locking
 	// need to determine current hash by re-capitulating file
 
 	n := Block{
-		Branch:       branch,
+		Branch:       vc.CurrentBranch,
 		PreviousHash: currentHash,
 		Patch:        reldel.GetPatch(vc.CurrentText, text),
 	}
