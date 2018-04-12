@@ -38,6 +38,8 @@ func Init() (*VCSystem, error) {
 	vc.Owners = []string{identity.Public}
 	vc.CurrentBranch = "master"
 	vc.Files = make(map[string]VCFile)
+	os.Mkdir(".vcs", 0755)
+	// load all files in directory
 	return vc, nil
 }
 
