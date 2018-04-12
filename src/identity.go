@@ -18,6 +18,7 @@ func init() {
 		ioutil.WriteFile("identity.json", b, 0644)
 	} else {
 		json.Unmarshal(b, &identity)
+		identity, _ = keypair.New(identity)
 	}
 	log.Debugf("using identity: %s", identity.Public)
 }

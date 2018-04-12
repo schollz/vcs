@@ -10,7 +10,7 @@ import (
 
 func TestNew(t *testing.T) {
 	defer log.Flush()
-	vc, err := Init("test.txt")
+	vc, err := Init()
 	assert.Nil(t, err)
 	fmt.Println(vc)
 }
