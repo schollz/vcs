@@ -1,4 +1,4 @@
-package vcf
+package vcs
 
 import (
 	"compress/gzip"
@@ -11,12 +11,14 @@ import (
 	"github.com/schollz/reldel"
 )
 
+// VCSystem is the structure for the version-controlled system
+type VCSystem struct {
+	Owners        []string `json:"owners"`
+	CurrentBranch string   `json:"current_branch"`
+}
+
 // VCFile is the structure for a version-controlled file
 type VCFile struct {
-	Filename      string           `json:"filename"`
-	CurrentText   string           `json:"current_text"`
-	CurrentHash   string           `json:"current_hash"`
-	CurrentBranch string           `json:"current_branch"`
 	StartingBlock string           `json:"starting_block"`
 	BlockMap      map[string]Block `json:"blocks"` // organized by hash
 }
@@ -48,11 +50,13 @@ func Init(filename string) (*VCFile, error) {
 }
 
 // Commit will write the current commit to a file
-func (vc *VCFile) Commit(text string) (blockHash string, err error) {
+func (vc *VCFile) Commit(text, branch string) (blockHash string, err error) {
 	// TODO add file locking
+	// need to determine current hash by re-capitulating file
+
 	n := Block{
-		Branch:       vc.CurrentBranch,
-		PreviousHash: vc.CurrentHash,
+		Branch:       branch,
+		PreviousHash: currentHash,
 		Patch:        reldel.GetPatch(vc.CurrentText, text),
 	}
 	h := sha256.New()
@@ -61,11 +65,8 @@ func (vc *VCFile) Commit(text string) (blockHash string, err error) {
 	h.Write([]byte(n.Patch.Time.String()))
 	blockHash = fmt.Sprintf("%x", h.Sum(nil))
 	vc.StartingBlock = blockHash
-	vc.CurrentHash = blockHash
-	vc.CurrentText = text
-	vc.BlockMap[vc.CurrentHash] = n
+	vc.BlockMap[blockHash] = n
 
-	err = vc.writeToFile()
 	return
 }
 
